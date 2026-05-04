@@ -32,12 +32,21 @@ class SecurityResult(BaseModel):
     reason: Optional[str] = None
 
 
+class SecurityTier(str, Enum):
+    STANDARD = "STANDARD"
+    ELEVATED = "ELEVATED"
+    RESTRICTED = "RESTRICTED"
+
+
 class PRD(BaseModel):
     title: str = Field(..., description="Concise project title")
     executive_summary: str
     personas: list[str]
     success_metrics: list[str]
+    risks: list[str] = Field(default_factory=list, description="Known risks and mitigations")
+    api_endpoints: list[str] = Field(default_factory=list, description="Key API surfaces referenced")
     priority: Literal["P0", "P1", "P2"]
+    security_tier: SecurityTier = SecurityTier.STANDARD
     tpm_lead: str
 
 

@@ -37,6 +37,16 @@ def _alert_slack(message: str) -> None:
 
 
 def _page_payload(prd: PRD, database_id: str) -> dict:
+    risk_children = [
+        {
+            "object": "block",
+            "type": "bulleted_list_item",
+            "bulleted_list_item": {
+                "rich_text": [{"type": "text", "text": {"content": r}}]
+            },
+        }
+        for r in prd.risks
+    ]
     return {
         "parent": {"database_id": database_id},
         "properties": {
@@ -45,6 +55,7 @@ def _page_payload(prd: PRD, database_id: str) -> dict:
             "TPM Lead": {"select": {"name": prd.tpm_lead}},
             "Status": {"select": {"name": "Drafted"}},
             "Personas": {"multi_select": [{"name": p} for p in prd.personas]},
+            "Security Tier": {"select": {"name": prd.security_tier.value}},
         },
         "children": [
             {
@@ -78,6 +89,34 @@ def _page_payload(prd: PRD, database_id: str) -> dict:
                 }
                 for m in prd.success_metrics
             ],
+            {
+                "object": "block",
+                "type": "toggle",
+                "toggle": {
+                    "rich_text": [{"type": "text", "text": {"content": "Risks"}}],
+                    "children": risk_children,
+                },
+            },
+            {
+                "object": "block",
+                "type": "heading_2",
+                "heading_2": {
+                    "rich_text": [{"type": "text", "text": {"content": "API Endpoints"}}]
+                },
+            },
+            {
+                "object": "block",
+                "type": "code",
+                "code": {
+                    "language": "plain text",
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {"content": "\n".join(prd.api_endpoints) or "TBD"},
+                        }
+                    ],
+                },
+            },
         ],
     }
 
